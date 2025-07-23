@@ -10,14 +10,18 @@ from huggingface_hub import hf_hub_download
 from tqdm import tqdm
 from torchaudio import load
 from librosa import resample
+
 from bigvgan_utils.bigvgan import BigVGAN
 from baseline_models.MSS_mask_model import MaskingModel
 from bigvgan_utils.utils import load_checkpoint
 from bigvgan_utils.env import AttrDict
 from bigvgan_utils.meldataset import mel_spectrogram
+from sgmsvs.sgmse.util.other import set_torch_cuda_arch_list
+set_torch_cuda_arch_list()
 from sgmsvs.MSS_model import ScoreModel
 from sgmsvs.sgmse.util.other import pad_spec
 from sgmsvs.loudness import calculate_loudness
+
 
 
 TARGET_SR = 44100
