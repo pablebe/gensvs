@@ -262,7 +262,7 @@ class SGMSVS():
             noisy_files += sorted(glob.glob(os.path.join(test_dir, '*.wav')))
             noisy_files += sorted(glob.glob(os.path.join(test_dir, '**', '*.wav')))
         
-        torch.manual_seed(1234)
+        torch.manual_seed(random_seed)
         for noisy_file in tqdm(noisy_files, desc="Processing files with SGMSVS"):
             filename = noisy_file.replace(test_dir, "")
             filename = filename[1:] if filename.startswith(os.path.sep) else filename
