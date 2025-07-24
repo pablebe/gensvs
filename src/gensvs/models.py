@@ -193,31 +193,7 @@ class SGMSVS():
             Y = torch.unsqueeze(self.model._forward_transform(self.model._stft(y.to(self.device))), 0)
         Y = pad_spec(Y, mode=PAD_MODE)
 
-
-        # Reverse sampling
-        # if not(output_mono):
-        #     x_hat_ch = []
-        #     for ch in range(Y.shape[0]):
-        #         if self.sde.__class__.__name__ == 'OUVESDE':
-        #             if sampler_type == 'pc':
-        #                 sampler = self.model.get_pc_sampler('reverse_diffusion', corrector, Y[ch,...][None,...].to(self.device), N=N, 
-        #                     corrector_steps=corrector_steps, snr=snr)
-        #             elif sampler_type == 'ode':
-        #                 sampler = self.model.get_ode_sampler(Y[ch,...][None,...].to(self.device), N=N)
-        #             else:
-        #                 raise ValueError(f"Sampler type {sampler_type} not supported")
-        #         elif self.sde.__class__.__name__ == 'SBVESDE':
-        #             sampler_type = 'ode' if sampler_type == 'pc' else sampler_type
-        #             sampler = self.model.get_sb_sampler(sde=self.model.sde, y=Y[ch,...][None,...].cuda(), sampler_type=sampler_type)
-        #         else:
-        #             raise ValueError(f"SDE {self.model.sde.__class__.__name__} not supported")
-        #         sample, _ = sampler()
-                
-        #         # Backward transform in time domain
-        #         temp = self.model.to_audio(sample.squeeze(), T_orig)
-        #         x_hat_ch.append(temp)
-        #     x_hat = torch.stack(x_hat_ch, dim=0)
-        # else:            
+  
         if self.model.sde.__class__.__name__ == 'OUVESDE':
             if sampler_type == 'pc':
                 sampler = self.model.get_pc_sampler('reverse_diffusion', corrector, Y.to(self.device), N=N, 
