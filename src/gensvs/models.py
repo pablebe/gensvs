@@ -22,7 +22,7 @@ from sgmsvs.MSS_model import ScoreModel
 from sgmsvs.sgmse.util.other import pad_spec
 from sgmsvs.loudness import calculate_loudness
 
-
+#TODO: model inference is different ==> signals do not match to zenodo why?
 
 TARGET_SR = 44100
 T_EPS = 0.03
@@ -69,6 +69,7 @@ class MelRoFoBigVGAN():
         
         norm_fac = y.abs().max()
         y = y / norm_fac
+
         x_hat_melrofo = self.melroformer(y.unsqueeze(0).to(self.device)).squeeze()
         x_hat_melrofo = x_hat_melrofo.to("cpu") * norm_fac
         mel_sep = mel_spectrogram(
@@ -116,6 +117,10 @@ class MelRoFoBigVGAN():
             if sr != TARGET_SR:
                 y = torch.tensor(resample(y.numpy(), orig_sr=sr, target_sr=TARGET_SR))
             
+            if y.shape[0]<2:
+                # if audio has only one channel copy and stack channel to get stereo input for model 
+                y = torch.stack((y, y), dim=0).squeeze()
+                            
             with torch.no_grad():   
                 x_hat, x_hat_melrofo = self.forward(y)
             
@@ -125,11 +130,11 @@ class MelRoFoBigVGAN():
                 x_hat_melrofo = x_hat_melrofo.T
                 
             if output_mono:           
-                audio_mono = x_hat[:,0].cpu()
-                x_hat = np.stack((audio_mono, audio_mono), axis=1)
+                x_hat = x_hat[:,0].cpu()
+#                x_hat = np.stack((audio_mono, audio_mono), axis=1)
                 
-                audio_mono_melrofo = x_hat_melrofo[:,0].cpu()
-                x_hat_melrofo = np.stack((audio_mono_melrofo, audio_mono_melrofo), axis=1)
+                x_hat_melrofo = x_hat_melrofo[:,0].cpu()
+#                x_hat_melrofo = np.stack((audio_mono_melrofo, audio_mono_melrofo), axis=1)
             else:
                 x_hat = x_hat.cpu().numpy()
                 x_hat_melrofo = x_hat_melrofo.cpu().numpy()
@@ -151,8 +156,8 @@ class MelRoFoBigVGAN():
             os.makedirs(os.path.dirname(os.path.join(out_dir, 'melroformer_bigvgan',filename)), exist_ok=True)
             sf.write(os.path.join(out_dir, 'melroformer_bigvgan', filename), x_hat, TARGET_SR)
             # Write separated vocals from MelRoFo(S) to wav file
-            os.makedirs(os.path.dirname(os.path.join(os.path.sep.join(out_dir.split(os.path.sep)[:-1]),'melroformer_small',filename)), exist_ok=True)
-            sf.write(os.path.join(os.path.sep.join(out_dir.split(os.path.sep)[:-1]),'melroformer_small', filename), x_hat_melrofo, TARGET_SR)
+            os.makedirs(os.path.dirname(os.path.join(out_dir,'melroformer_small',filename)), exist_ok=True)
+            sf.write(os.path.join(out_dir,'melroformer_small', filename), x_hat_melrofo, TARGET_SR)
                 
                 
 class SGMSVS():
@@ -264,8 +269,8 @@ class SGMSVS():
                 x_hat = x_hat.T
                 
             if output_mono:           
-                audio_mono = x_hat[:,0].cpu()
-                x_hat = np.stack((audio_mono, audio_mono), axis=1)
+                x_hat = x_hat[:,0].cpu()
+#                x_hat = np.stack((audio_mono, audio_mono), axis=1)
             else:
                 x_hat = x_hat.cpu().numpy()
                 
