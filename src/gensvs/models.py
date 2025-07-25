@@ -23,7 +23,7 @@ from sgmsvs.sgmse.util.other import pad_spec
 from sgmsvs.loudness import calculate_loudness
 
 #TODO: model inference is different ==> signals do not match to zenodo why?
-
+#TODO: Get CUDA random seed from enhancement script on Lucier to make sgmsvs inference reproducible => also corrector step 1 was used for sgmsvs samples
 TARGET_SR = 44100
 T_EPS = 0.03
 PAD_MODE = 'reflection'
@@ -183,39 +183,48 @@ class SGMSVS():
                 corrector_steps=2,
                 N=45,
                 snr=0.5, 
-                output_mono=False):
-        
+                output_mono=False,
+                random_seed=1234
+               ):
+
+
+        torch.manual_seed(random_seed)
+
         T_orig = y.size(1)
 
         # Normalize
         norm_factor = y.abs().max()
         y = y / norm_factor
         
-        # Prepare DNN input
-        if y.shape[0]>1:
-            Y = torch.unsqueeze(self.model._forward_transform(self.model._stft(y.to(self.device))), 1)
-        else:
-            Y = torch.unsqueeze(self.model._forward_transform(self.model._stft(y.to(self.device))), 0)
-        Y = pad_spec(Y, mode=PAD_MODE)
-
-  
-        if self.model.sde.__class__.__name__ == 'OUVESDE':
-            if sampler_type == 'pc':
-                sampler = self.model.get_pc_sampler('reverse_diffusion', corrector, Y.to(self.device), N=N, 
-                    corrector_steps=corrector_steps, snr=snr)
-            elif sampler_type == 'ode':
-                sampler = self.model.get_ode_sampler(Y.to(self.device), N=N)
+        with torch.no_grad():
+            # Prepare DNN input
+            if y.shape[0]>1:
+                Y = torch.unsqueeze(self.model._forward_transform(self.model._stft(y.to(self.device))), 1)
             else:
-                raise ValueError(f"Sampler type {sampler_type} not supported")
-        elif self.model.sde.__class__.__name__ == 'SBVESDE':
-            sampler_type = 'ode' if sampler_type == 'pc' else sampler_type
-            sampler = self.model.get_sb_sampler(sde=self.model.sde, y=Y.cuda(), sampler_type=sampler_type)
-        else:
-            raise ValueError(f"SDE {self.model.sde.__class__.__name__} not supported")
-        sample, _ = sampler()
-        
-        # Backward transform in time domain
-        x_hat = self.model.to_audio(sample.squeeze(), T_orig)
+                Y = torch.unsqueeze(self.model._forward_transform(self.model._stft(y.to(self.device))), 0)
+            Y = pad_spec(Y, mode=PAD_MODE)
+
+            x_hat_ch = []
+            for ch in range(Y.shape[0]):
+                if self.model.sde.__class__.__name__ == 'OUVESDE':
+                    if sampler_type == 'pc':
+                        sampler = self.model.get_pc_sampler('reverse_diffusion', corrector, Y[ch,...][None,...].to(self.device), N=N, 
+                            corrector_steps=corrector_steps, snr=snr)
+                    elif sampler_type == 'ode':
+                        sampler = self.model.get_ode_sampler(Y[ch,...][None,...].to(self.device), N=N)
+                    else:
+                        raise ValueError(f"Sampler type {sampler_type} not supported")
+                elif self.model.sde.__class__.__name__ == 'SBVESDE':
+                    sampler_type = 'ode' if sampler_type == 'pc' else sampler_type
+                    sampler = self.model.get_sb_sampler(sde=self.model.sde, y=Y[ch,...][None,...].cuda(), sampler_type=sampler_type)
+                else:
+                    raise ValueError(f"SDE {self.model.sde.__class__.__name__} not supported")
+                sample, _ = sampler()
+                
+                # Backward transform in time domain
+                x_hat = self.model.to_audio(sample.squeeze(), T_orig)
+                x_hat_ch.append(x_hat)
+            x_hat = torch.stack(x_hat_ch, dim=0)
 
         # Renormalize
         x_hat = x_hat * norm_factor
@@ -247,7 +256,6 @@ class SGMSVS():
             noisy_files += sorted(glob.glob(os.path.join(test_dir, '*.wav')))
             noisy_files += sorted(glob.glob(os.path.join(test_dir, '**', '*.wav')))
         
-        torch.manual_seed(random_seed)
         for noisy_file in tqdm(noisy_files, desc="Processing files with SGMSVS"):
             filename = noisy_file.replace(test_dir, "")
             filename = filename[1:] if filename.startswith(os.path.sep) else filename
@@ -258,15 +266,15 @@ class SGMSVS():
             if sr != TARGET_SR:
                 y = torch.tensor(resample(y.numpy(), orig_sr=sr, target_sr=TARGET_SR))
             
-            with torch.no_grad():
-                if output_mono:
-                # if audio is written as mono output only process first channel => sgmsvs is faster for mono input
-                    x_hat = self.forward(y[0,:].unsqueeze(0), sampler_type=sampler_type, corrector=corrector, corrector_steps=corrector_steps, N=N, snr=snr, output_mono=output_mono)
-                else:
-                    x_hat = self.forward(y, sampler_type=sampler_type, corrector=corrector, corrector_steps=corrector_steps, N=N, snr=snr, output_mono=output_mono)
-            if y.shape[0]>1:
-                #if stereo put channel dimenion last
-                x_hat = x_hat.T
+
+            #if output_mono:
+            # if audio is written as mono output only process first channel => sgmsvs is faster for mono input
+            #    x_hat = self.forward(y[0,:].unsqueeze(0), sampler_type=sampler_type, corrector=corrector, corrector_steps=corrector_steps, N=N, snr=snr, output_mono=output_mono)
+            #else:
+            x_hat = self.forward(y, sampler_type=sampler_type, corrector=corrector, corrector_steps=corrector_steps, N=N, snr=snr, output_mono=output_mono, random_seed=random_seed)
+            
+
+            x_hat = x_hat.T
                 
             if output_mono:           
                 x_hat = x_hat[:,0].cpu()
