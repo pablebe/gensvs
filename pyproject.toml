@@ -51,11 +51,14 @@ packages = ["src/gensvs"]
 "src/gensvs/bigvgan_utils" = "bigvgan_utils" 
 "src/gensvs/baseline_models" = "baseline_models"
 "src/gensvs/sgmsvs" = "sgmsvs"
+"src/gensvs/eval_utils" = "eval_utils"
 
 [tool.hatch.build.targets.wheel.force-include]
 "src/gensvs/bigvgan_utils" = "bigvgan_utils"
 "src/gensvs/baseline_models" = "baseline_models"
 "src/gensvs/sgmsvs" = "sgmsvs"
+"src/gensvs/eval_utils" = "eval_utils"
 
 [project.scripts]
 gensvs = "gensvs.cli:main"
+gensvs_eval = "gensvs.evaluate:main"

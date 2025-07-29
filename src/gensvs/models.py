@@ -121,7 +121,7 @@ class MelRoFoBigVGAN():
                 # if audio has only one channel copy and stack channel to get stereo input for model 
                 y = torch.stack((y, y), dim=0).squeeze()
                             
-            with torch.no_grad():   
+            with torch.no_grad():
                 x_hat, x_hat_melrofo = self.forward(y)
             
             if y.shape[0]>1:
@@ -170,8 +170,6 @@ class SGMSVS():
             hf_hub_download(repo_id="pablebe/sgmsvs", filename="sgmsvs_epoch=510-sdr=7.22.ckpt", local_dir=os.path.join("trained_models", "sgmsvs"))
 
         self.device = device
-
-
         self.model = ScoreModel.load_from_checkpoint(sgmsvs_ckpt, map_location=self.device)
         self.model.t_eps = T_EPS
         self.model.eval()
@@ -184,6 +182,7 @@ class SGMSVS():
                 N=45,
                 snr=0.5, 
                 output_mono=False,
+                ch_by_ch_processing=False,
                 random_seed=1234
                ):
 
@@ -205,27 +204,64 @@ class SGMSVS():
             Y = pad_spec(Y, mode=PAD_MODE)
 
             x_hat_ch = []
-            for ch in range(Y.shape[0]):
-                if self.model.sde.__class__.__name__ == 'OUVESDE':
-                    if sampler_type == 'pc':
-                        sampler = self.model.get_pc_sampler('reverse_diffusion', corrector, Y[ch,...][None,...].to(self.device), N=N, 
-                            corrector_steps=corrector_steps, snr=snr)
-                    elif sampler_type == 'ode':
-                        sampler = self.model.get_ode_sampler(Y[ch,...][None,...].to(self.device), N=N)
+            if ch_by_ch_processing:
+                for ch in range(Y.shape[0]):
+                    if self.model.sde.__class__.__name__ == 'OUVESDE':
+                        if sampler_type == 'pc':
+                            sampler = self.model.get_pc_sampler('reverse_diffusion', corrector, Y[ch,...][None,...].to(self.device), N=N, 
+                                corrector_steps=corrector_steps, snr=snr)
+                        elif sampler_type == 'ode':
+                            sampler = self.model.get_ode_sampler(Y[ch,...][None,...].to(self.device), N=N)
+                        else:
+                            raise ValueError(f"Sampler type {sampler_type} not supported")
+                    elif self.model.sde.__class__.__name__ == 'SBVESDE':
+                        sampler_type = 'ode' if sampler_type == 'pc' else sampler_type
+                        sampler = self.model.get_sb_sampler(sde=self.model.sde, y=Y[ch,...][None,...].cuda(), sampler_type=sampler_type)
                     else:
-                        raise ValueError(f"Sampler type {sampler_type} not supported")
-                elif self.model.sde.__class__.__name__ == 'SBVESDE':
-                    sampler_type = 'ode' if sampler_type == 'pc' else sampler_type
-                    sampler = self.model.get_sb_sampler(sde=self.model.sde, y=Y[ch,...][None,...].cuda(), sampler_type=sampler_type)
+                        raise ValueError(f"SDE {self.model.sde.__class__.__name__} not supported")
+                    sample, _ = sampler()
+                    
+                    # Backward transform in time domain
+                    x_hat = self.model.to_audio(sample.squeeze(), T_orig)
+                    x_hat_ch.append(x_hat)
+                x_hat = torch.stack(x_hat_ch, dim=0)
+            else:
+                if output_mono:
+                    if self.model.sde.__class__.__name__ == 'OUVESDE':
+                        if sampler_type == 'pc':
+                            sampler = self.model.get_pc_sampler('reverse_diffusion', corrector, Y[0,...][None,...].to(self.device), N=N, 
+                                corrector_steps=corrector_steps, snr=snr)
+                        elif sampler_type == 'ode':
+                            sampler = self.model.get_ode_sampler(Y[0,...][None,...].to(self.device), N=N)
+                        else:
+                            raise ValueError(f"Sampler type {sampler_type} not supported")
+                    elif self.model.sde.__class__.__name__ == 'SBVESDE':
+                        sampler_type = 'ode' if sampler_type == 'pc' else sampler_type
+                        sampler = self.model.get_sb_sampler(sde=self.model.sde, y=Y[0,...][None,...].cuda(), sampler_type=sampler_type)
+                    else:
+                        raise ValueError(f"SDE {self.model.sde.__class__.__name__} not supported")
+                    sample, _ = sampler()
+                    
+                    # Backward transform in time domain
+                    x_hat = self.model.to_audio(sample.squeeze(), T_orig)                
                 else:
-                    raise ValueError(f"SDE {self.model.sde.__class__.__name__} not supported")
-                sample, _ = sampler()
-                
-                # Backward transform in time domain
-                x_hat = self.model.to_audio(sample.squeeze(), T_orig)
-                x_hat_ch.append(x_hat)
-            x_hat = torch.stack(x_hat_ch, dim=0)
-
+                    if self.model.sde.__class__.__name__ == 'OUVESDE':
+                        if sampler_type == 'pc':
+                            sampler = self.model.get_pc_sampler('reverse_diffusion', corrector, Y.to(self.device), N=N, 
+                                corrector_steps=corrector_steps, snr=snr)
+                        elif sampler_type == 'ode':
+                            sampler = self.model.get_ode_sampler(Y.to(self.device), N=N)
+                        else:
+                            raise ValueError(f"Sampler type {sampler_type} not supported")
+                    elif self.model.sde.__class__.__name__ == 'SBVESDE':
+                        sampler_type = 'ode' if sampler_type == 'pc' else sampler_type
+                        sampler = self.model.get_sb_sampler(sde=self.model.sde, y=Y.cuda(), sampler_type=sampler_type)
+                    else:
+                        raise ValueError(f"SDE {self.model.sde.__class__.__name__} not supported")
+                    sample, _ = sampler()
+                    
+                    # Backward transform in time domain
+                    x_hat = self.model.to_audio(sample.squeeze(), T_orig)
         # Renormalize
         x_hat = x_hat * norm_factor
 
@@ -245,7 +281,8 @@ class SGMSVS():
                    random_seed=1234,
                    loudness_normalize=False, 
                    loudness_level=-18, 
-                   output_mono=False):
+                   output_mono=False,
+                   ch_by_ch_processing=False):
         
         os.makedirs(out_dir, exist_ok=True)
         noisy_files = []
@@ -271,8 +308,7 @@ class SGMSVS():
             # if audio is written as mono output only process first channel => sgmsvs is faster for mono input
             #    x_hat = self.forward(y[0,:].unsqueeze(0), sampler_type=sampler_type, corrector=corrector, corrector_steps=corrector_steps, N=N, snr=snr, output_mono=output_mono)
             #else:
-            x_hat = self.forward(y, sampler_type=sampler_type, corrector=corrector, corrector_steps=corrector_steps, N=N, snr=snr, output_mono=output_mono, random_seed=random_seed)
-            
+            x_hat = self.forward(y, sampler_type=sampler_type, corrector=corrector, corrector_steps=corrector_steps, N=N, snr=snr, output_mono=output_mono, ch_by_ch_processing=ch_by_ch_processing, random_seed=random_seed)
 
             x_hat = x_hat.T
                 

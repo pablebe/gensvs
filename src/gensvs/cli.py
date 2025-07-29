@@ -12,16 +12,16 @@ def main():
     parser.add_argument("--loudness-normalize", action="store_true", help="Whether to apply loudness normalization to the output files.")
     parser.add_argument("--loudness-level", type=float, default=-18.0, help="Target loudness level in LUFS for normalization (default: -18.0).")
     parser.add_argument("--output-mono", action="store_true", help="If set output will contain two channels with identical signals.")
-    parser.add_argument("--sampler-type", type=str, default="pc", choices=["pc", "ode"], help="Type of sampler to use (default: pc).")
-    parser.add_argument("--corrector", type=str, default="ald", choices=["ald", "langevin", "none"], help="Corrector type to use (default: ald).")
-    parser.add_argument("--corrector-steps", type=int, default=2, help="Number of corrector steps (default: 2).")
-    parser.add_argument("--N", type=int, default=45, help="Number of inference steps (default: 45).")
-    parser.add_argument("--snr", type=float, default=0.5, help="Signal-to-noise ratio for inference (default: 0.5).")
-    parser.add_argument("--random-seed", type=int, default=1234, help="Random seed for reproducibility (default: 1234).")
+    parser.add_argument("--ch-by-ch-processing", action="store_true", help="If set, process each channel separately (default: False). Only applicable for SGMSVS model.")
+    parser.add_argument("--sampler-type", type=str, default="pc", choices=["pc", "ode"], help="Type of sampler to use (default: pc). Only applicable for SGMSVS model.")
+    parser.add_argument("--corrector", type=str, default="ald", choices=["ald", "langevin", "none"], help="Corrector type to use (default: ald). Only applicable for SGMSVS model.")
+    parser.add_argument("--corrector-steps", type=int, default=2, help="Number of corrector steps (default: 2). Only applicable for SGMSVS model.")
+    parser.add_argument("--N", type=int, default=45, help="Number of inference steps (default: 45). Only applicable for SGMSVS model.")
+    parser.add_argument("--snr", type=float, default=0.5, help="Signal-to-noise ratio for inference (default: 0.5). Only applicable for SGMSVS model.")
+    parser.add_argument("--random-seed", type=int, default=1234, help="Random seed for reproducibility (default: 1234). Only applicable for SGMSVS model.")
     args = parser.parse_args()
     
-    
-    
+       
     
     if args.model == 'sgmsvs':
         model = SGMSVS()
@@ -36,7 +36,8 @@ def main():
             random_seed=args.random_seed,
             loudness_normalize=args.loudness_normalize,
             loudness_level=args.loudness_level,
-            output_mono=args.output_mono
+            output_mono=args.output_mono,
+            ch_by_ch_processing=args.ch_by_ch_processing,
         )
     elif args.model == 'melrofobigvgan':
         model = MelRoFoBigVGAN()
