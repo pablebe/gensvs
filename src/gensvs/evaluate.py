@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from gensvs import EmbeddingMSE, get_all_models, cache_embedding_files
 from pathlib import Path
 
-WORKERS = 1
+WORKERS = 8
 
 models = {m.name: m for m in get_all_models()}
 
