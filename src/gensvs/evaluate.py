@@ -14,8 +14,8 @@ def main():
     parser.add_argument('--test-dir', type=str, required=True, help='Path to processed audio directory')
     parser.add_argument('--target-dir', type=str, required=True, help='Path to target audio directory')
     parser.add_argument('--output-dir', type=str, required=True, help='Path to output directory for metric results')
-    parser.add_argument('--embedding', type=str, default='MERT-v1-95M', choices=models.keys())
-    parser.add_argument('--workers', type=int, default=WORKERS, help='Number of workers for embedding calculation. Default: 1')
+    parser.add_argument('--embedding', type=str, default='MERT-v1-95M', choices=models.keys(), help = 'Embedding model to use for evaluation. Default: MERT-v1-95M')
+    parser.add_argument('--workers', type=int, default=WORKERS, help='Number of workers for embedding calculation. Default: 8')
 
     args = parser.parse_args() 
     

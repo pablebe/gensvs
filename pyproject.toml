@@ -1,6 +1,6 @@
 [project]
 name = "gensvs"
-version = "0.1.0"
+version = "1.0.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -47,18 +47,18 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.sdist]
 packages = ["src/gensvs"]
 
-[tool.hatch.build.targets.sdist.force-include]
-"src/gensvs/bigvgan_utils" = "bigvgan_utils" 
-"src/gensvs/baseline_models" = "baseline_models"
-"src/gensvs/sgmsvs" = "sgmsvs"
-"src/gensvs/eval_utils" = "eval_utils"
+[tool.hatch.build.targets.wheel]
+only-include =["src/gensvs", "src/gensvs/backbones", "src/gensvs/baseline_models", "src/gensvs/bigvgan_utils", "src/gensvs/eval_utils", "src/gensvs/sgmsvs"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"src/gensvs/bigvgan_utils" = "bigvgan_utils"
-"src/gensvs/baseline_models" = "baseline_models"
-"src/gensvs/sgmsvs" = "sgmsvs"
-"src/gensvs/eval_utils" = "eval_utils"
+[tool.hatch.build.targets.wheel.sources]
+"src"=""
+"src/gensvs/backbones"="backbones"
+"src/gensvs/baseline_models"="baseline_models"
+"src/gensvs/bigvgan_utils"="bigvgan_utils"
+"src/gensvs/eval_utils"="eval_utils"
+"src/gensvs/sgmsvs"="sgmsvs"
 
 [project.scripts]
 gensvs = "gensvs.cli:main"
-gensvs_eval = "gensvs.evaluate:main"
+gensvs-eval = "gensvs.evaluate:main"
+

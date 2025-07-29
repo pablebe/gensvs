@@ -2,7 +2,11 @@ import torch
 import soundfile
 import logging
 import numpy as np
-
+import music2latent
+import numpy
+import torch.serialization
+from music2latent import EncoderDecoder
+torch.serialization.add_safe_globals([numpy.dtype,numpy.dtypes.Float64DType,numpy.core.multiarray.scalar])
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -60,11 +64,6 @@ class Music2LatentModel(ModelLoader):
         # Add any other variables you need here
 
     def load_model(self):
-        import music2latent
-        import numpy
-        import torch.serialization
-        from music2latent import EncoderDecoder
-        torch.serialization.add_safe_globals([numpy.dtype,numpy.dtypes.Float64DType,numpy.core.multiarray.scalar])
         self.model = EncoderDecoder()
 
     def _get_embedding(self, audio: np.ndarray) -> np.ndarray:

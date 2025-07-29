@@ -9,3 +9,12 @@ wheels/
 # Virtual environments
 .venv
 trained_models/
+uv_token.txt
+demo/audio_examples/target/embeddings/
+demo/audio_examples/separated/sgmsvs/embeddings/
+demo/audio_examples/separated/melroformer_bigvgan/embeddings/
+demo/audio_examples/separated/melroformer_small/embeddings/
+demo/audio_examples/target/convert/
+demo/audio_examples/separated/sgmsvs/convert/
+demo/audio_examples/separated/melroformer_bigvgan/convert/
+demo/audio_examples/separated/melroformer_small/convert/
