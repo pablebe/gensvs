@@ -1,18 +1,22 @@
 # gensvs: Generative Singing Voice Separation
 This python package accompanies the paper "Towards Reliable Objective Evaluation Metrics for Generative Singing Voice Separation" by Paul A. Bereuter, Benjamin Stahl, Mark D. Plumbley and Alois Sontacchi, presented at WASPAA 2025.
-It allows easy inference of the two proposed generative models (SGMSVS and MelRoFo (S) + BigVGAN) and easy computation of the embedding MSE metrics that exhibited the highest correlation with human scores. 
+It allows easy inference of the two proposed generative models (SGMSVS and MelRoFo (S) + BigVGAN) and easy computation of the embedding MSE metrics that exhibited the highest correlation with human DMOS ratings. 
 
-Additionally, this package comprises all packages to execute the training code of [GitHub](https://github.com/pablebe/gensvs_eval).
+Additionally, this package comprises all packages to execute the training code available at [GitHub](https://github.com/pablebe/gensvs_eval).
 
 > Note: When carrying out inference or evaluation with this package each necessary model (singing voice separation or embedding model) are downloaded automatically. 
 
 ## 🚀 Installation and Usage
 ### Installation via pip
+You can install the package via pip using:
+```bash
+pip install gensvs
+```
 ### Install from Source
 1. Clone this repository 
 2. Run ```pip install "."```
 ### Set Up a Conda Environment with Bash Script
-We recommend installing using this package in a separate conda environment. If you have a running conda installation e.g. [Miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main) or [Miniforge](https://github.com/conda-forge/miniforge) you can execute the included bash-script ```./setup_conda_env.sh```which automatically creates a conda environment and installs the gensvs package via pip.
+We recommend installing using this package in a separate conda environment. The recommended settings for the conda environment can be found in ```env_info/gensvs_env.yml``` and if you have a running conda installation e.g. [Miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main) or [Miniforge](https://github.com/conda-forge/miniforge) you can execute the included bash-script ```./setup_conda_env.sh```which automatically creates a conda environment and installs the gensvs package via pip.
 More information regarding the usage for model inference and model evaluation is listed below.
 ## 🏃🏽‍♀️‍➡️ Model Inference
 ### Command Line Tool
@@ -171,6 +175,7 @@ The whole evaluation code was created using Microsoft's [Frechet Audio Distance 
               }
 ```
 If you use the [MERT](https://huggingface.co/m-a-p/MERT-v1-95M) or [Music2Latent](https://github.com/SonyCSLParis/music2latent) MSE please also cite the initial work in which the embeddings were proposed. 
+
 For [MERT](https://huggingface.co/m-a-p/MERT-v1-95M):
 ```bib
 @misc{li2023mert,
@@ -182,7 +187,7 @@ For [MERT](https://huggingface.co/m-a-p/MERT-v1-95M):
       primaryClass={cs.SD}
 }
 ```
-For [Music2Latent](https://github.com/SonyCSLParis/music2latent)
+For [Music2Latent](https://github.com/SonyCSLParis/music2latent):
 ```bib
 @inproceedings{pasini2024music2latent,
   author       = {Marco Pasini and Stefan Lattner and George Fazekas},
@@ -193,6 +198,8 @@ For [Music2Latent](https://github.com/SonyCSLParis/music2latent)
   venue        = {San Francisco, California, USA and Online},
   doi          = {10.5281/zenodo.14877289},
 }
+```
 # License
-In accordance with Microsoft's [Frechet Audio Distance Tookit](https://github.com/microsoft/fadtk/tree/main) this work is made available under a [MIT License]()
+In accordance with Microsoft's [Frechet Audio Distance Tookit](https://github.com/microsoft/fadtk/tree/main) this work is made available under an 
+[MIT License](https://github.com/pablebe/gensvs/blob/master/LICENSE).
 
