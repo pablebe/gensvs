@@ -5,13 +5,13 @@ from pathlib import Path
 #embedding calculation builds on multiprocessing library => don't forget to wrap your code in a main function
 WORKERS = 8
 
-SEP_PATH = './gensvs_eval_audio_and_embeddings/'
-TGT_PATH = './gensvs_eval_audio_and_embeddings/target'
-OUT_DIR = './eval_metrics'
+SEP_PATH = './demo/audio_examples/separated'
+TGT_PATH = './demo/audio_examples/target'
+OUT_DIR = './demo/eval_metrics'
 
 def main():
     # calculate embedding MSE
-    embedding = 'MERT-v1-95M'#music2latent
+    embedding = 'music2latent'#'MERT-v1-95M'#music2latent
     models = {m.name: m for m in get_all_models()}
     model = models[embedding]
     svs_model_names = ['sgmsvs', 'melroformer_bigvgan', 'melroformer_small']
