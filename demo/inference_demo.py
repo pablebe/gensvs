@@ -1,5 +1,3 @@
-import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from gensvs import MelRoFoBigVGAN, SGMSVS
 
 MIX_PATH = './demo/audio_examples/mixture'

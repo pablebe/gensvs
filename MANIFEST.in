@@ -1,0 +1,2 @@
+recursive-include src/sgmsvs *.cpp *.h *.cu
+recursive-include src/bigvgan_utils *.json

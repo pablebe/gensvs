@@ -9,7 +9,8 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 from torch.nn import Conv2d
-from torch.nn.utils import weight_norm, spectral_norm
+from torch.nn.utils.parametrizations import weight_norm
+from torch.nn.utils import spectral_norm
 from torchaudio.transforms import Spectrogram, Resample
 
 from bigvgan_utils.env import AttrDict
