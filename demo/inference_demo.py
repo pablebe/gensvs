@@ -1,7 +1,9 @@
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from gensvs import MelRoFoBigVGAN, SGMSVS
 
-MIX_PATH = './audio_examples/mixture'
-SEP_PATH = './audio_examples/separated'
+MIX_PATH = './demo/audio_examples/mixture'
+SEP_PATH = './demo/audio_examples/separated'
 
 sgmsvs_model = SGMSVS()
 melrofo_model = MelRoFoBigVGAN()

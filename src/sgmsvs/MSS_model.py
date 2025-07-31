@@ -81,11 +81,6 @@ class ScoreModel(pl.LightningModule):
         self.l1_weight = l1_weight
         self.nolog = kwargs.get('nolog', False)
         self.audio_log_interv = kwargs.get('audio_log_interval', 1)
-#        self.pesq_weight = pesq_weight
-#        sdr = SignalDistortionRatio()
-#        si_sdr = ScaleInvariantSignalDistortionRatio()
-#        self.sdr = sdr.forward
-#        self.si_sdr = si_sdr.forward
         self.sdr = signal_distortion_ratio
         self.si_sdr = scale_invariant_signal_distortion_ratio
         multi_res_loss = MultiResolutionSTFTLoss(
@@ -109,15 +104,9 @@ class ScoreModel(pl.LightningModule):
         self.sr = sr
         self.valid_ct = 0
         self.accomp_target = target_is_accompaniment
-        # Initialize PESQ loss if pesq_weight > 0.0
-#        if pesq_weight > 0.0:
-#            self.pesq_loss = PesqLoss(1.0, sample_rate=sr).eval()
-#            for param in self.pesq_loss.parameters():
-#                param.requires_grad = False
         self.save_hyperparameters(ignore=['no_wandb'])
         self.data_module = data_module_cls(**kwargs, gpu=kwargs.get('gpus', 0) > 0)
         self.ckpt = None
-#        self.temp_ct = 0
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
@@ -138,23 +127,11 @@ class ScoreModel(pl.LightningModule):
                 self.trainer.fit_loop.epoch_progress.current.completed=checkpoint['epoch']
             except RuntimeError as e:
                 print('No Trainer found, current epoch was not set.')
-#        self.ckpt=checkpoint
         if ema is not None:
             self.ema.load_state_dict(checkpoint['ema'])
-#            self.dnn.load_state_dict(checkpoint['state_dict'])
         else:
             self._error_loading_ema = True
             warnings.warn("EMA state_dict not found in checkpoint!")
-        # from thop import profile
-        # dummy_batch = self.data_module.train_set.__getitem__(0)
-        # x_dummy = dummy_batch[0].to(device=self.device).unsqueeze(1)
-        # y_dummy = dummy_batch[1].to(device=self.device).unsqueeze(1)
-        # dummy_input =  torch.cat([x_dummy, y_dummy], dim=1).to(device=self.device)
-        # dummy_input_2 = torch.randn(dummy_batch[0].shape[0]).to(device=self.device)
-        # macs, params = profile(self.dnn, inputs=(dummy_input, dummy_input_2))
-        # print("THOP model summary for: masked-based "+str(self.backbone))
-        # print(f"MACs/s: {macs / 1e9:.2f} B")
-        # print(f"Parameters: {params / 1e6:.2f} M")
 
     def on_save_checkpoint(self, checkpoint):
         checkpoint['ema'] = self.ema.state_dict()
@@ -193,10 +170,7 @@ class ScoreModel(pl.LightningModule):
                 losses = torch.square(torch.abs(score * sigma + z)) # Eq. (7)
             else:
                 raise ValueError("Invalid loss weighting for loss_type=score_matching: {}".format(self.loss_weighting))
-            # Sum over spatial dimensions and channels and mean over batch
-            # if losses.isnan().any():
-            #     print("Losses contain NaNs")
-            #     breakpoint()
+
             loss = torch.mean(0.5*torch.sum(losses.reshape(losses.shape[0], -1), dim=-1))
         elif self.loss_type == "denoiser":
             score = forward_out
@@ -226,14 +200,6 @@ class ScoreModel(pl.LightningModule):
             x_td = self.to_audio(x.squeeze(), target_len)
             losses_l1 = (1 / target_len) * torch.abs(x_hat_td - x_td)
             losses_l1 = torch.mean(0.5*torch.sum(losses_l1.reshape(losses_l1.shape[0], -1), dim=-1))
-
-            # losses using PESQ
-#            if self.pesq_weight > 0.0:
-#                losses_pesq = self.pesq_loss(x_td, x_hat_td)
-#                losses_pesq = torch.mean(losses_pesq)
-#                # combine the losses
-#                loss = losses_tf + self.l1_weight * losses_l1 + self.pesq_weight * losses_pesq 
-#            else:
             loss = losses_tf + self.l1_weight * losses_l1
         else:
             raise ValueError("Invalid loss type: {}".format(self.loss_type))
@@ -247,14 +213,9 @@ class ScoreModel(pl.LightningModule):
             x = y-x # make accompaniment target
 
         #reshape => fuse channel and batch dimensions and unsqueeze so dimension fits for sde.marginal_prob()
-
         x = x.reshape(x.shape[0]*x.shape[1], x.shape[2], x.shape[3]).unsqueeze(1)
         y = y.reshape(y.shape[0]*y.shape[1], y.shape[2], y.shape[3]).unsqueeze(1)
         y = pad_spec(y, mode="reflection")
-                
-        # if y.isnan().any():
-        #     print("y out contain NaNs")
-        #     breakpoint()
         x = pad_spec(x, mode="reflection")
 
         t = torch.rand(x.shape[0], device=x.device) * (self.sde.T - self.t_eps) + self.t_eps
@@ -263,10 +224,6 @@ class ScoreModel(pl.LightningModule):
         sigma = std[:, None, None, None]
         x_t = mean + sigma * z
         forward_out = self(x_t, y, t)
-        
-        # if forward_out.isnan().any():
-        #     print("Forward out contain NaNs")
-        #     breakpoint()
         loss = self._loss(forward_out, x_t, z, t, mean, x)
         return loss
 
@@ -284,9 +241,6 @@ class ScoreModel(pl.LightningModule):
         if batch_idx == 0 and self.num_eval_files != 0:
             # Split the evaluation files among the GPUs
             eval_files_per_gpu = self.num_eval_files // world_size
-
-
-
             # Select the files for this GPU     
             if rank == world_size - 1:
                 first_valid_file = rank*eval_files_per_gpu
@@ -307,7 +261,6 @@ class ScoreModel(pl.LightningModule):
                 # Load the clean and noisy speech
 
                 y, x, target_rms = self.data_module.valid_set.dataset[item_id]
-#                x, sr_x = load(clean_file)
                 x = x.squeeze().numpy()
                 y = y.squeeze().numpy()
 
@@ -552,11 +505,9 @@ class ScoreModel(pl.LightningModule):
         One-call speech enhancement of noisy speech `y`, for convenience.
         """
         start = time.time()
-#        Y = y
         T_orig = y.size(1) 
-        norm_factor = y.abs().max()#.item()
+        norm_factor = y.abs().max()
         y = y / norm_factor
-#        Y = torch.unsqueeze(self._forward_transform(self._stft(y.cuda())), 0)
         if y.shape[0]>1:
             Y = torch.unsqueeze(self._forward_transform(self._stft(y.cuda())), 1)
         else:

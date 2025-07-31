@@ -22,7 +22,6 @@ class Predictor(abc.ABC):
     @abc.abstractmethod
     def update_fn(self, x, t, *args):
         """One update of the predictor.
-
         Args:
             x: A PyTorch tensor representing the current state
             t: A Pytorch tensor representing the current time step.

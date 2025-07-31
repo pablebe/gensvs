@@ -314,72 +314,6 @@ class MSSMUSDBDataset(data.Dataset):
                     target_other = other_blocks[block_idx]
                     target_drums = drums_blocks[block_idx]
 
-
-
-
-
-        #ensure that the target sources are not silent
-        # if self.valid_flag == True:
-        #     target_bass_rms = compute_rms(target_bass)#np.sqrt(np.mean(target_bass**2))
-        #     target_vocals_rms = compute_rms(target_vocals)#np.sqrt(np.mean(target_vocals**2))
-        #     target_other_rms = compute_rms(target_other)#np.sqrt(np.mean(target_other**2))
-        #     target_drums_rms = compute_rms(target_drums)#np.sqrt(np.mean(target_drums**2))
-
-        #     if random_mixing_flag:
-        #         if self.target_str=='bass':
-        #             while target_bass_rms <= self.rms_threshold:
-        #                 bass_start_index = np.random.randint(np.maximum(bass_len - seq_dur, 0)+1)
-        #                 target_bass, _ = soundfile.read(target_bass_filepath, frames = seq_dur, start = bass_start_index, dtype='float32')
-        #                 target_bass_rms = compute_rms(target_bass)#np.sqrt(np.mean(target_bass**2))
-
-        #         elif self.target_str=='vocals':
-        #             while target_vocals_rms <= self.rms_threshold:
-        #                 vocals_start_index = np.random.randint(np.maximum(vocals_len - seq_dur, 0)+1)
-        #                 target_vocals, _ = soundfile.read(target_vocals_filepath, frames = seq_dur, start = vocals_start_index, dtype='float32')
-        #                 target_vocals_rms = compute_rms(target_vocals)#np.sqrt(np.mean(target_vocals**2))
-
-        #         elif self.target_str=='other':
-        #             while target_other_rms <= 10**(-60/20): 
-        #                 other_start_index = np.random.randint(np.maximum(other_len - seq_dur, 0)+1)
-        #                 target_other, _ = soundfile.read(target_other_filepath, frames = seq_dur, start = other_start_index, dtype='float32')
-        #                 target_other_rms = compute_rms(target_other)#np.sqrt(np.mean(target_other**2))
-                
-        #         elif self.target_str=='drums':
-        #             while target_drums_rms <= 10**(-60/20):
-        #                 drums_start_index = np.random.randint(np.maximum(drums_len - seq_dur, 0)+1)
-        #                 target_drums, _ = soundfile.read(target_drums_filepath, frames = seq_dur, start = drums_start_index, dtype='float32')
-        #                 target_drums_rms = compute_rms(target_drums)#np.sqrt(np.mean(target_drums**2))
-
-        #     else:
-
-
-
-
-                # if self.target_str=='bass':
-                #     while target_bass_rms <= 10**(-60/20):
-                #         mixture_start_index = np.random.randint(np.maximum(mixture_len - seq_dur, 0)+1)
-                #         target_bass, _ = soundfile.read(target_bass_filepath, frames = seq_dur, start = mixture_start_index, dtype='float32')
-                #         target_bass_rms = compute_rms(target_bass)#np.sqrt(np.mean(target_bass**2))
-
-                # elif self.target_str=='vocals':
-                #     while target_vocals_rms <= 10**(-60/20):
-                #         mixture_start_index = np.random.randint(np.maximum(mixture_len - seq_dur, 0)+1)
-                #         target_vocals, _ = soundfile.read(target_vocals_filepath, frames = seq_dur, start = mixture_start_index, dtype='float32')
-                #         target_vocals_rms = compute_rms(target_vocals)# np.sqrt(np.mean(target_vocals**2))
-
-                # elif self.target_str=='other':
-                #     while target_other_rms <= 10**(-60/20):
-                #         mixture_start_index = np.random.randint(np.maximum(mixture_len - seq_dur, 0)+1)
-                #         target_other, _ = soundfile.read(target_other_filepath, frames = seq_dur, start = mixture_start_index, dtype='float32')
-                #         target_other_rms = compute_rms(target_other)# np.sqrt(np.mean(target_other**2))
-
-                # elif self.target_str=='drums':
-                #     while target_drums_rms <= 10**(-60/20):
-                #         mixture_start_index = np.random.randint(np.maximum(mixture_len - seq_dur, 0)+1)
-                #         target_drums, _ = soundfile.read(target_drums_filepath, frames = seq_dur, start = mixture_start_index, dtype='float32')
-                #         target_drums_rms = compute_rms(target_drums)# np.sqrt(np.mean(target_drums**2))
-
-
         else: 
             # still ensure that mixture is not silent
             temp_mixture = target_bass+target_vocals+target_other+target_drums#torch.stack((target_bass, target_vocals, target_other, target_drums),-1).sum(-1)
@@ -461,8 +395,6 @@ class MSSMUSDBDataset(data.Dataset):
 
         mixture = torch.stack((target_bass, target_vocals, target_other, target_drums),-1).sum(-1)
 
-#        if self.valid_flag:
-#            np.random.seed() #reset seed after validation set as been created
 
         if self.target_str == 'bass':
             target = target_bass
@@ -481,15 +413,12 @@ class MSSMUSDBDataset(data.Dataset):
         if (torch.Tensor(mixture)==0).all():
             print('mixture is silent')
             self.silent_mixture_counter += 1
-#            breakpoint()
 
         if (torch.Tensor(target)==0).all():
             print('target is silent')
             self.silent_target_counter += 1
-#            breakpoint()
 
-        return torch.Tensor(mixture), torch.Tensor(target), target_rms#, torch.Tensor(target_bass), torch.Tensor(target_vocals), torch.Tensor(target_other), torch.Tensor(target_drums), vocal_rms#, mixture_filepath#, mixture_start_index#x, y_bass, y_vocals, y_other, y_drums
-    
+        return torch.Tensor(mixture), torch.Tensor(target), target_rms
     def update_samples_per_track(self, samples_per_track_new):
         self.samples_per_track = samples_per_track_new
 
@@ -637,9 +566,6 @@ class MSSMoisesDBDataset(data.Dataset):
                 other_len = other_info.frames
                 other_lens.append(other_len)
                 other_start_index.append(np.random.randint(np.maximum(other_len - seq_dur, 0)+1))
-            # other_info = soundfile.info(target_other_filepaths[0])
-            # other_len = other_info.frames
-            # other_start_index = np.random.randint(np.maximum(other_len - seq_dur, 0)+1)
 
             drums_info = soundfile.info(target_drums_filepath)
             drums_len = drums_info.frames
@@ -663,11 +589,10 @@ class MSSMoisesDBDataset(data.Dataset):
                     target_other += temp_other
 
 
-            target_bass_rms = compute_rms(target_bass)# np.sqrt(np.mean(target_bass**2))
-            target_vocals_rms = compute_rms(target_vocals)#np.sqrt(np.mean(target_vocals**2))
-            target_other_rms = compute_rms(target_other)#np.sqrt(np.mean(target_other**2))
-            target_drums_rms = compute_rms(target_drums)#np.sqrt(np.mean(target_drums**2))
-
+            target_bass_rms = compute_rms(target_bass)
+            target_vocals_rms = compute_rms(target_vocals)
+            target_other_rms = compute_rms(target_other)
+            target_drums_rms = compute_rms(target_drums)
 
             #ensure target is not silent
             if self.target_str=='bass':
@@ -692,7 +617,7 @@ class MSSMoisesDBDataset(data.Dataset):
                     for file_other, start_idx in zip(target_other_filepaths, other_start_idex):
                         temp_other, _ = soundfile.read(file_other, frames = seq_dur, start = start_idx, dtype='float32')
                         target_other += temp_other                        
-                    target_other_rms = compute_rms(target_other)# np.sqrt(np.mean(target_other**2))
+                    target_other_rms = compute_rms(target_other)
             elif self.target_str=='drums':
                 while target_drums_rms <= self.rms_threshold:
                     drums_start_index = np.random.randint(np.maximum(drums_len - seq_dur, 0)+1)
@@ -706,7 +631,6 @@ class MSSMoisesDBDataset(data.Dataset):
                 bass_len = bass_info.frames
                 seq_dur = int(np.floor(self.fs*duration))
                 mixture_start_index = np.random.randint(np.maximum(bass_len - seq_dur, 0)+1)
-    #            mixture, _ = soundfile.read(mixture_filepath, frames = seq_dur, start = mixture_start_index, dtype='float32')
 
                 vocals_info = soundfile.info(target_vocals_filepath)
                 vocals_len = vocals_info.frames
@@ -714,12 +638,6 @@ class MSSMoisesDBDataset(data.Dataset):
                 drums_info = soundfile.info(target_drums_filepath)
                 drums_len = drums_info.frames
 
-    #            bass_start_index = mixture_start_index
-    #            vocals_start_index = mixture_start_index
-    #            other_start_index = mixture_start_index
-    #            drums_start_index = mixture_start_index
-
-    #            other_start_index = mixture_start_index
                 other_lens = []
                 other_conds = []
                 for file_other in target_other_filepaths:
@@ -727,9 +645,6 @@ class MSSMoisesDBDataset(data.Dataset):
                     other_len = other_info.frames
                     other_lens.append(other_len)
                     other_conds.append(not((mixture_start_index + seq_dur) < other_len))
-    #               if not((mixture_start_index + seq_dur) < other_len):
-    #                   breakpoint()
-    #               assert ((mixture_start_index + seq_dur) < other_len), "Other sample is too short for the desired duration!"
 
                 len_conds = [not((mixture_start_index + seq_dur) < bass_len), not((mixture_start_index + seq_dur) < vocals_len), not((mixture_start_index + seq_dur) < drums_len)]
                 len_conds = len_conds + other_conds
@@ -756,10 +671,10 @@ class MSSMoisesDBDataset(data.Dataset):
                         target_other += temp_other
 
 
-                target_bass_rms = compute_rms(target_bass)# np.sqrt(np.mean(target_bass**2))
-                target_vocals_rms = compute_rms(target_vocals)#np.sqrt(np.mean(target_vocals**2))
-                target_other_rms = compute_rms(target_other)#np.sqrt(np.mean(target_other**2))
-                target_drums_rms = compute_rms(target_drums)#np.sqrt(np.mean(target_drums**2))
+                target_bass_rms = compute_rms(target_bass)
+                target_vocals_rms = compute_rms(target_vocals)
+                target_other_rms = compute_rms(target_other)
+                target_drums_rms = compute_rms(target_drums)
                                  
                 #ensure target is not silent
                 if self.target_str=='bass':
@@ -771,34 +686,6 @@ class MSSMoisesDBDataset(data.Dataset):
                 elif self.target_str=='drums':
                         conds = conds + [target_drums_rms <= self.rms_threshold]
 
-#                print("stop")
-#               other_start_index.append(mixture_start_index)
-
-
-
-        # target_bass, _ = soundfile.read(target_bass_filepath, frames = seq_dur, start = bass_start_index, dtype='float32')
-        # target_vocals, _ = soundfile.read(target_vocals_filepath, frames = seq_dur, start = vocals_start_index, dtype='float32')
-        # target_drums, _ = soundfile.read(target_drums_filepath, frames = seq_dur, start = drums_start_index, dtype='float32')
-
-        # # sum other stem
-        # if random_mixing_flag:
-        #     target_other = np.zeros((seq_dur,2))
-        #     for file_other, start_idx in zip(target_other_filepaths, other_start_index):
-        #         temp_other, _ = soundfile.read(file_other, frames = seq_dur, start = start_idx, dtype='float32')
-        #         target_other += temp_other        
-        # else:    
-        #     target_other = np.zeros((seq_dur,2))
-        #     for file_other in target_other_filepaths:
-        #         temp_other, _ = soundfile.read(file_other, frames = seq_dur, start = other_start_index, dtype='float32')
-        #         target_other += temp_other
-
-
-        # target_bass_rms = compute_rms(target_bass)# np.sqrt(np.mean(target_bass**2))
-        # target_vocals_rms = compute_rms(target_vocals)#np.sqrt(np.mean(target_vocals**2))
-        # target_other_rms = compute_rms(target_other)#np.sqrt(np.mean(target_other**2))
-        # target_drums_rms = compute_rms(target_drums)#np.sqrt(np.mean(target_drums**2))
-
-
 
         #ensure that the target sources are not silent
         if np.random.rand() <= self.full_mix_percentage:
@@ -807,12 +694,12 @@ class MSSMoisesDBDataset(data.Dataset):
                 while target_bass_rms <= self.rms_threshold:
                     bass_start_index = np.random.randint(np.maximum(bass_len - seq_dur, 0)+1)
                     target_bass, _ = soundfile.read(target_bass_filepath, frames = seq_dur, start = bass_start_index, dtype='float32')
-                    target_bass_rms = compute_rms(target_bass)# np.sqrt(np.mean(target_bass**2))
+                    target_bass_rms = compute_rms(target_bass)
 
                 while target_vocals_rms <= self.rms_threshold:
                     vocals_start_index = np.random.randint(np.maximum(vocals_len - seq_dur, 0)+1)
                     target_vocals, _ = soundfile.read(target_vocals_filepath, frames = seq_dur, start = vocals_start_index, dtype='float32')
-                    target_vocals_rms = compute_rms(target_vocals)# np.sqrt(np.mean(target_vocals**2))
+                    target_vocals_rms = compute_rms(target_vocals)
 
                 while target_other_rms <= self.rms_threshold: 
                     other_start_idex = []
@@ -825,13 +712,12 @@ class MSSMoisesDBDataset(data.Dataset):
                     for file_other, start_idx in zip(target_other_filepaths, other_start_idex):
                         temp_other, _ = soundfile.read(file_other, frames = seq_dur, start = start_idx, dtype='float32')
                         target_other += temp_other                        
-                    target_other_rms = compute_rms(target_other)# np.sqrt(np.mean(target_other**2))
+                    target_other_rms = compute_rms(target_other)
             
                 while target_drums_rms <= self.rms_threshold:
                     drums_start_index = np.random.randint(np.maximum(drums_len - seq_dur, 0)+1)
                     target_drums, _ = soundfile.read(target_drums_filepath, frames = seq_dur, start = drums_start_index, dtype='float32')
-                    target_drums_rms = compute_rms(target_drums)# np.sqrt(np.mean(target_drums**2))
-
+                    target_drums_rms = compute_rms(target_drums)
             else:
                 
                 rms_index = [target_bass_rms<= self.rms_threshold, target_vocals_rms<= self.rms_threshold, target_other_rms<= self.rms_threshold, target_drums_rms<= self.rms_threshold]
@@ -872,13 +758,13 @@ class MSSMoisesDBDataset(data.Dataset):
 
                     for i in range(n_blocks):
                         bass_blocks[i] = target_bass[i*seq_dur:(i+1)*seq_dur]
-                        bass_block_rms[i] = compute_rms(bass_blocks[i])# np.sqrt(np.mean(bass_blocks[i]**2))
+                        bass_block_rms[i] = compute_rms(bass_blocks[i])
                         vocals_blocks[i] = target_vocals[i*seq_dur:(i+1)*seq_dur]
-                        vocals_block_rms[i] = compute_rms(vocals_blocks[i])#  np.sqrt(np.mean(vocals_blocks[i]**2))
+                        vocals_block_rms[i] = compute_rms(vocals_blocks[i])
                         other_blocks[i] = target_other[i*seq_dur:(i+1)*seq_dur]
-                        other_block_rms[i] = compute_rms(other_blocks[i])#  np.sqrt(np.mean(other_blocks[i]**2))
+                        other_block_rms[i] = compute_rms(other_blocks[i])
                         drums_blocks[i] = target_drums[i*seq_dur:(i+1)*seq_dur]
-                        drums_block_rms[i] = compute_rms(drums_blocks[i])#  np.sqrt(np.mean(drums_blocks[i]**2))
+                        drums_block_rms[i] = compute_rms(drums_blocks[i])
 
                     all_blocks_rms = np.stack((bass_block_rms, vocals_block_rms, other_block_rms, drums_block_rms), axis=1)
                     #determine non-silent blocks
@@ -1071,15 +957,9 @@ class MSSMoisesDBDataset(data.Dataset):
             track_folder_other = self.foldername_list[item//self.samples_per_track]
             track_folder_drums = self.foldername_list[item//self.samples_per_track]
 
-#        mixture_filepath = os.path.join(mixture_track_folder,'mixture.wav')
-#        target_bass_filepath = os.path.join(track_folder_bass, 'bass.wav')
-#        target_vocals_filepath = os.path.join(track_folder_vocals,'vocals.wav')
-#        target_other_filepath = os.path.join(track_folder_other,'other.wav')
-        # 'other' stem is made up of every source except vocals, bass and drums
         target_other_folders = get_subfoldernames_in_folder(track_folder_other)
         target_other_folders_log_idx = [False if not(folder.endswith('vocals')) and not(folder.endswith('bass')) and not(folder.endswith('drums')) else True for folder in target_other_folders]
         target_other_folders = np.delete(target_other_folders, np.where(target_other_folders_log_idx))
-#        target_drums_filepath = os.path.join(track_folder_drums,'drums.wav')
         if self.valid_flag:
             np.random.seed(item)
             temp = self.get_training_sample(track_folder_bass, track_folder_vocals, target_other_folders, track_folder_drums, self.random_mixing, self.augmentations, self.duration)
@@ -1109,7 +989,6 @@ class MSSMUSMoisDBDataset(data.Dataset):
         for folder in moisdb_foldername_list:
             subfolders = []
             subfolders += sorted(glob(os.path.join(folder, '**')))
-#            subfolders = get_subfoldernames_in_folder(folder)
 
             contains_target = [True if target_str in subfolder else False for subfolder in subfolders]
             if not any(contains_target):
@@ -1185,14 +1064,9 @@ class MSSMUSMoisDBDataset(data.Dataset):
         return self.musdb_dataset.__len__() + self.moisdb_dataset.__len__()
     
     def __getitem__(self, item):
-#        print(item)
-#        torch.manual_seed(13)
-#        np.random.seed(13)
 
         if item < self.musdb_n_samples:
-#            print("sample #"+str(item)+" from MusDB")
             return self.musdb_dataset.__getitem__(item)
         else:
-#            print("sample #"+str(item)+" from MoisesDB")
             return self.moisdb_dataset.__getitem__(item-self.musdb_n_samples)
 

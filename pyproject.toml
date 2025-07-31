@@ -29,6 +29,7 @@ dependencies = [
     "pytorch-lightning>=2.5.2",
     "rotary-embedding-torch>=0.8.8",
     "scipy>=1.16.0",
+    "setuptools>=80.9.0",
     "soundfile>=0.13.1",
     "tensorboard>=2.20.0",
     "torch>=2.7.1",
@@ -41,22 +42,13 @@ dependencies = [
 ]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
 
-[tool.hatch.build.targets.sdist]
-packages = ["src/gensvs"]
-
-[tool.hatch.build.targets.wheel]
-only-include =["src/gensvs", "src/gensvs/backbones", "src/gensvs/baseline_models", "src/gensvs/bigvgan_utils", "src/gensvs/eval_utils", "src/gensvs/sgmsvs"]
-
-[tool.hatch.build.targets.wheel.sources]
-"src"=""
-"src/gensvs/backbones"="backbones"
-"src/gensvs/baseline_models"="baseline_models"
-"src/gensvs/bigvgan_utils"="bigvgan_utils"
-"src/gensvs/eval_utils"="eval_utils"
-"src/gensvs/sgmsvs"="sgmsvs"
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["baseline_models*", "bigvgan_utils*", "eval_utils*", "sgmsvs*"]
+namespaces = true
 
 [project.scripts]
 gensvs = "gensvs.cli:main"

@@ -21,7 +21,6 @@ class Corrector(abc.ABC):
     @abc.abstractmethod
     def update_fn(self, x, y, t, *args):
         """One update of the corrector.
-
         Args:
             x: A PyTorch tensor representing the current state
             t: A PyTorch tensor representing the current time step.

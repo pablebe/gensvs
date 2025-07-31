@@ -20,4 +20,4 @@ echo "CUDA_HOME set to: $CUDA_HOME"
 
 # install gensvs package
 echo "Installing gensvs package..."
-pip install dist/gensvs-1.0.0-py3-none-any.whl
+pip install -e .

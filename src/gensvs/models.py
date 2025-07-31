@@ -49,7 +49,7 @@ class MelRoFoBigVGAN():
         # clone melrformer model
         self.melroformer = copy.deepcopy(melroform_bigvgan_model.dnn)
         
-        with open(os.path.join( os.path.dirname(os.path.realpath(__file__)),'bigvgan_utils', 'configs', 'bigvgan_v2_44khz_128band_512x.json')) as f:
+        with open(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),'bigvgan_utils', 'configs', 'bigvgan_v2_44khz_128band_512x.json')) as f:
             data = f.read()
         json_config = json.loads(data)
         self.bigvgan_config = AttrDict(json_config)
