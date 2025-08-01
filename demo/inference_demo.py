@@ -6,6 +6,6 @@ SEP_PATH = './demo/audio_examples/separated'
 sgmsvs_model = SGMSVS()
 melrofo_model = MelRoFoBigVGAN()
 
-sgmsvs_model.run_folder(MIX_PATH, SEP_PATH, loudness_normalize=False, loudness_level=-18, output_mono=True, ch_by_ch_processing=False)
+sgmsvs_model.run_folder(MIX_PATH, SEP_PATH, loudness_normalize=False, loudness_level=-18, output_mono=True)
 melrofo_model.run_folder(MIX_PATH, SEP_PATH, loudness_normalize=False, loudness_level=-18, output_mono=True)
 

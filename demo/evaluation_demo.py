@@ -7,7 +7,7 @@ WORKERS = 8
 
 SEP_PATH = './demo/audio_examples/separated'
 TGT_PATH = './demo/audio_examples/target'
-OUT_DIR = './demo/eval_metrics'
+OUT_DIR = './demo/eval_metrics_demo'
 
 def main():
     # calculate embedding MSE
@@ -20,7 +20,7 @@ def main():
         # 1. Calculate and store embedding files for each dataset
         for d in [TGT_PATH, os.path.join(SEP_PATH, model_name)]:
             if Path(d).is_dir():
-                cache_embedding_files(d, model, workers=WORKERS)
+                cache_embedding_files(d, model, workers=WORKERS, load_model=True)
 
         csv_out_path = Path(os.path.join(OUT_DIR, model_name,embedding+'_MSE', 'embd_mse.csv'))
         # 2. Calculate embedding MSE for each file in folder

@@ -2,10 +2,8 @@ import torch
 import soundfile
 import logging
 import numpy as np
-import music2latent
 import numpy
 import torch.serialization
-from music2latent import EncoderDecoder
 torch.serialization.add_safe_globals([numpy.dtype,numpy.dtypes.Float64DType,numpy.core.multiarray.scalar])
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -61,10 +59,15 @@ class Music2LatentModel(ModelLoader):
     def __init__(self):
         # Define your sample rate and number of features here. Audio will automatically be resampled to this sample rate.
         super().__init__("music2latent", num_features=64, sr=44100)
+        from music2latent.utils import download_model
+        #ensure model is downloaded before parallelization starts
+        download_model()
         # Add any other variables you need here
 
     def load_model(self):
+        from music2latent import EncoderDecoder
         self.model = EncoderDecoder()
+
 
     def _get_embedding(self, audio: np.ndarray) -> np.ndarray:
         # Calculate the embeddings using your model
@@ -95,7 +98,6 @@ class MERTModel(ModelLoader):
         
         self.model = AutoModel.from_pretrained(self.huggingface_id, trust_remote_code=True)
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(self.huggingface_id, trust_remote_code=True)
-        # self.sr = self.processor.sampling_rate
         self.model.to(self.device)
 
     def _get_embedding(self, audio: np.ndarray) -> np.ndarray:
