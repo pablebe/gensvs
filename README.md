@@ -1,10 +1,10 @@
 # gensvs: Generative Singing Voice Separation
-This python package accompanies the paper "Towards Reliable Objective Evaluation Metrics for Generative Singing Voice Separation" by Paul A. Bereuter, Benjamin Stahl, Mark D. Plumbley and Alois Sontacchi, presented at WASPAA 2025.
-It allows easy inference of the two proposed generative models (SGMSVS and MelRoFo (S) + BigVGAN) and easy computation of the embedding MSE metrics that exhibited the highest correlation with human DMOS ratings. 
+This Python package supports the paper "Towards Reliable Objective Evaluation Metrics for Generative Singing Voice Separation" by Paul A. Bereuter, Benjamin Stahl, Mark D. Plumbley and Alois Sontacchi, presented at WASPAA 2025.
+It facilitates the straightforward inference of the two proposed generative models (SGMSVS and MelRoFo (S) + BigVGAN) and the computation of the embedding MSE metrics that exhibited the highest correlation with human DMOS ratings. 
 
 Additionally, this package comprises all packages to execute the training code available at [GitHub](https://github.com/pablebe/gensvs_eval).
 
-> Note: When carrying out inference or evaluation with this package each necessary model (singing voice separation or embedding model) are downloaded automatically. 
+> Note: When using this package to carry out inference or evaluation, the necessary models (e.g. singing voice separation or embedding models) are downloaded automatically.
 
 ## 🚀 Installation and Usage
 ### Installation via pip
@@ -16,19 +16,19 @@ pip install gensvs
 1. Clone this repository 
 2. Run ```pip install "."```
 ### Set Up a Conda Environment with Bash Script
-We recommend installing using this package in a separate conda environment. The recommended settings for the conda environment can be found in ```env_info/gensvs_env.yml``` and if you have a running conda installation e.g. [Miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main) or [Miniforge](https://github.com/conda-forge/miniforge) you can execute the included bash-script ```./setup_conda_env.sh```which automatically creates a conda environment and installs the gensvs package via pip.
-More information regarding the usage for model inference and model evaluation is listed below.
+We recommend installing using this package in a separate conda environment. The recommended settings for the conda environment can be found in ```env_info/gensvs_env.yml``` and if you have a running conda installation (e.g. [Miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main) or [Miniforge](https://github.com/conda-forge/miniforge)), you can run the included bash-script, ```./setup_conda_env.sh```, which automatically create a conda environment and install the gensvs package via pip.
+Further information on the usage of model inference and model evaluation is provided below.
 ## 🏃🏽‍♀️‍➡️ Model Inference
 ### Command Line Tool
-You can carry out the model inference using our command line tool. An exemplary call for the SGMSVS model is shown below:
+You can carry out the model inference using our command line tool. An example call for the SGMSVS model is shown below:
 ```bash
 gensvs --model sgmsvs --device cuda  --mix-dir audio_examples/mixture --output-dir audio_examples/separated --output-mono
 ``` 
-To isolate the inference to one CUDA device please you can set the environment variable ```CUDA_VISIBLE_DEVICES``` before the calling the command tool. You'll find an exemplary inference call for 'MelRoFo (S) + BigVGAN', isolated on GPU 0, below:
+To isolate the inference to one CUDA device please you can set the environment variable ```CUDA_VISIBLE_DEVICES``` before the calling the command tool. An exemplary inference call for 'MelRoFo (S) + BigVGAN', isolated on GPU 0, can be found below:
 ```bash
 CUDA_VISIBLE_DEVICES=0 gensvs --model melrofobigvgan --device cuda  --mix-dir audio_examples/mixture --output-dir audio_examples/separated --output-mono
 ``` 
-> Note: When separating vocals with the model 'MelRoFo (S) + BigVGAN' the signals before (only MelRoFo (S) separation) and after the finetuned BigVGAN are saved into the output directory.
+> Note: when using 'MelRoFo (S) + BigVGAN' model to separate vocals, the signals before (only MelRoFo (S) separation) and after the finetuned BigVGAN are saved into the output directory.
 
 For more details on the available inference parameters please call:
 ```bash 
@@ -52,9 +52,9 @@ melrofo_model.run_folder(MIX_PATH, SEP_PATH, loudness_normalize=False, loudness_
 You cam find this script in ```./demo/inference_demo.py```
 
 ## 📈 Model Evaluation with Embedding-based MSE
-We have included the calculation of the proposed embedding MSEs from the paper in this package, building on the code published with Microsoft's [Frechet Audio Distance Tookit](https://github.com/microsoft/fadtk/tree/main). You can calculate the Mean Squared Error on either [MERT](https://huggingface.co/m-a-p/MERT-v1-95M) or [Music2Latent](https://github.com/SonyCSLParis/music2latent) embeddings with the command line tool or from a Python script.
+In this package, we have included the calculation of the proposed embedding MSEs from the paper, building on the code published with Microsoft's [Frechet Audio Distance Tookit](https://github.com/microsoft/fadtk/tree/main). The Mean Squared Error on either [MERT](https://huggingface.co/m-a-p/MERT-v1-95M) or [Music2Latent](https://github.com/SonyCSLParis/music2latent) embeddings can be calculated with the command line tool or a Python script.
 ### Command Line Tool
-To calculate the embedding MSE you can the provided command line tool. An exemplary command line call to calculate the MSE on [MERT](https://huggingface.co/m-a-p/MERT-v1-95M) embeddings is shown below:
+An example command line call to calculate the MSE on [MERT](https://huggingface.co/m-a-p/MERT-v1-95M) embeddings is shown below:
 ```bash
 gensvs-eval --test-dir ./demo/audio_examples/separated/sgmsvs --target-dir ./demo/audio_examples/target --output-dir ./demo/results/sgmsvs --embedding MERT-v1-95M 
 ```
@@ -72,13 +72,13 @@ from pathlib import Path
 #embedding calculation builds on multiprocessing library => don't forget to wrap your code in a main function
 WORKERS = 8
 
-SEP_PATH = './gensvs_eval_audio_and_embeddings/'
-TGT_PATH = './gensvs_eval_audio_and_embeddings/target'
-OUT_DIR = './eval_metrics'
+SEP_PATH = './demo/audio_examples/separated'
+TGT_PATH = './demo/audio_examples/target'
+OUT_DIR = './demo/eval_metrics_demo'
 
 def main():
     # calculate embedding MSE
-    embedding = 'MERT-v1-95M'#music2latent
+    embedding = 'music2latent'#'MERT-v1-95M'#music2latent
     models = {m.name: m for m in get_all_models()}
     model = models[embedding]
     svs_model_names = ['sgmsvs', 'melroformer_bigvgan', 'melroformer_small']
@@ -87,7 +87,7 @@ def main():
         # 1. Calculate and store embedding files for each dataset
         for d in [TGT_PATH, os.path.join(SEP_PATH, model_name)]:
             if Path(d).is_dir():
-                cache_embedding_files(d, model, workers=WORKERS)
+                cache_embedding_files(d, model, workers=WORKERS, load_model=True)
 
         csv_out_path = Path(os.path.join(OUT_DIR, model_name,embedding+'_MSE', 'embd_mse.csv'))
         # 2. Calculate embedding MSE for each file in folder

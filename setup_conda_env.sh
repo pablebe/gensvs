@@ -20,8 +20,7 @@ echo "CUDA_HOME set to: $CUDA_HOME"
 
 # install gensvs package
 echo "Installing gensvs package..."
-pip install .
-
+pip install gensvs
 
 # clear cache of old torch extensions, which could cause problems with compiling cpp extensions
 echo "Clearing old torch extensions cache..."
