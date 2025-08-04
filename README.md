@@ -2,7 +2,7 @@
 This Python package supports the paper "Towards Reliable Objective Evaluation Metrics for Generative Singing Voice Separation" by Paul A. Bereuter, Benjamin Stahl, Mark D. Plumbley and Alois Sontacchi, presented at WASPAA 2025.
 It facilitates the straightforward inference of the two proposed generative models (SGMSVS and MelRoFo (S) + BigVGAN) and the computation of the embedding MSE metrics that exhibited the highest correlation with human DMOS ratings. 
 
-Additionally, this package comprises all packages to execute the training code available at [GitHub](https://github.com/pablebe/gensvs_eval).
+Additionally, this package comprises all packages to execute the [training code available at GitHub](https://github.com/pablebe/gensvs_eval).
 
 > Note: When using this package to carry out inference or evaluation, the necessary models (e.g. singing voice separation or embedding models) are downloaded automatically.
 
