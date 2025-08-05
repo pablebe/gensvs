@@ -11,7 +11,7 @@ OUT_DIR = './demo/eval_metrics_demo'
 
 def main():
     # calculate embedding MSE
-    embedding = 'music2latent'#'MERT-v1-95M'#music2latent
+    embedding = 'MERT-v1-95M'#music2latent
     models = {m.name: m for m in get_all_models()}
     model = models[embedding]
     svs_model_names = ['sgmsvs', 'melroformer_bigvgan', 'melroformer_small']

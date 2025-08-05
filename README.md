@@ -53,7 +53,7 @@ sgmsvs_model.run_folder(MIX_PATH, SEP_PATH, loudness_normalize=False, loudness_l
 melrofo_model.run_folder(MIX_PATH, SEP_PATH, loudness_normalize=False, loudness_level=-18, output_mono=True)
 ```
 
-You cam find this script in ```./demo/inference_demo.py```
+You can find this script on the GitHub-Repository in [```./demo/inference_demo.py```](https://github.com/pablebe/gensvs/tree/master/demo).
 
 ## 📈 Model Evaluation with Embedding-based MSE
 In this package, we have included the calculation of the proposed embedding MSEs from the paper, building on the code published with Microsoft's [Frechet Audio Distance Tookit](https://github.com/microsoft/fadtk/tree/main). The Mean Squared Error on either [MERT](https://huggingface.co/m-a-p/MERT-v1-95M) or [Music2Latent](https://github.com/SonyCSLParis/music2latent) embeddings can be calculated with the command line tool or a Python script.
@@ -82,7 +82,7 @@ OUT_DIR = './demo/eval_metrics_demo'
 
 def main():
     # calculate embedding MSE
-    embedding = 'music2latent'#'MERT-v1-95M'#music2latent
+    embedding = 'MERT-v1-95M'#music2latent
     models = {m.name: m for m in get_all_models()}
     model = models[embedding]
     svs_model_names = ['sgmsvs', 'melroformer_bigvgan', 'melroformer_small']
@@ -102,7 +102,7 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-This script can be found in in ```./demo/evaluation_demo.py```
+This script can be found in [```./demo/evaluation_demo.py```](https://github.com/pablebe/gensvs/tree/master/demo)
 ## ℹ️ Further information
 - Paper: [Preprint](https://arxiv.org/pdf/2507.11427)
 - Website: [Companion Page](https://pablebe.github.io/gensvs_eval_companion_page/) 
