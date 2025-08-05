@@ -1,8 +1,10 @@
 [project]
 name = "gensvs"
-version = "2.0.0"
+version = "2.0.1"
 description = "Add your description here"
 readme = "README.md"
+license = "MIT"
+keywords = ["singing voice separation", "muscial source separation", "generative models", "audio quality assessment" ]
 authors = [
     { name = "Paul A. Bereuter", email = "paul.bereuter@gmail.com" }
 ]
@@ -41,6 +43,16 @@ dependencies = [
     "wandb>=0.21.0",
 ]
 
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
+
+[project.urls]
+Homepage = "https://pablebe.github.io/gensvs_eval_companion_page/"
+Repository = "https://github.com/pablebe/gensvs"
+
 [build-system]
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
@@ -53,10 +65,3 @@ namespaces = true
 [project.scripts]
 gensvs = "gensvs.cli:main"
 gensvs-eval = "gensvs.evaluate:main"
-
-
-[[tool.uv.index]]
-name = "testpypi"
-url = "https://test.pypi.org/simple/"
-publish-url = "https://test.pypi.org/legacy/"
-explicit = true

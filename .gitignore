@@ -18,3 +18,4 @@ demo/audio_examples/target/convert/
 demo/audio_examples/separated/sgmsvs/convert/
 demo/audio_examples/separated/melroformer_bigvgan/convert/
 demo/audio_examples/separated/melroformer_small/convert/
+publish.yml

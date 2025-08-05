@@ -12,9 +12,13 @@ You can install the package via pip using:
 ```bash
 pip install gensvs
 ```
-### Install from Source
+### Installation from Source
+The package was tested on Debian but should also work with CUDA support on Microsoft Windows, if you follow the steps below.
 1. Clone this repository 
 2. Run ```pip install "."```
+### Installation on Microsoft Windows 
+1. Install the package via pip or from Source (see above)
+2. Reinstall PyTorch with CUDA>=12.6 using install command from ["PyTorch - Get Started"](https://pytorch.org/get-started/locally/) to get CUDA support.
 ### Set Up a Conda Environment with Bash Script
 We recommend installing using this package in a separate conda environment. The recommended settings for the conda environment can be found in ```env_info/gensvs_env.yml``` and if you have a running conda installation (e.g. [Miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main) or [Miniforge](https://github.com/conda-forge/miniforge)), you can run the included bash-script, ```./setup_conda_env.sh```, which automatically create a conda environment and install the gensvs package via pip.
 Further information on the usage of model inference and model evaluation is provided below.
